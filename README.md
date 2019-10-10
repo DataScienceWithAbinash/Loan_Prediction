@@ -6,7 +6,7 @@
  
  Investors (lenders) provide loans to borrowers in exchange for the promise of repayment with interest. That means the lender only makes profit (interest) if the borrower pays off the loan. However, if he/she doesn’t repay the loan, then the lender loses money.
  
-
+# how to build a Loan Prediction Machine Learning model.
 ### Import the required libraries
     import pandas as pd
     import numpy as np
@@ -16,6 +16,7 @@
     from sklearn import tree
     import matplotlib.pyplot as plt
     import seaborn as sns
+    from sklearn.externals import joblib
 ### Import the data
     Loan = pd.read_csv('Loan.csv')
     Loan.head()
@@ -61,3 +62,26 @@
     Loan_model = DecisionTreeClassifier()
     Loan_model.fit(X_train,y_train)
 ### Predict the model using test data  
+    y_pred=Loan_model.predict(X_test)
+### Test the accuracy score
+    accuracy_score(y_test,y_pred)
+### Tune the model using GrideSearchCV to improve the accuracy
+    parameters={'max_depth':[1,2,3,4,5],'min_samples_leaf':[1,2,3,4,5],'min_samples_split':[2,3,4,5],
+           'criterion':['gini','entropy']}
+    scorer=make_scorer(f1_score)
+### Fit the model into GrideSearchCV
+    grid_obj = GridSearchCV(Loan_model, parameters, scoring=scorer)
+    grid_fit = grid_obj.fit(X_train, y_train)
+    
+    best_Loan_model = grid_fit.best_estimator_
+    best_Loan_model
+    
+    best_Loan_model.fit(X_train, y_train)
+### Now test the model again
+    best_train_predictions = best_Loan_model.predict(X_train)
+    best_test_predictions = best_Loan_model.predict(X_test)
+
+    print('The training F1 Score is', f1_score(best_train_predictions, y_train)*100)
+    print('The testing F1 Score is', f1_score(best_test_predictions, y_test)*100)
+### Save the model using Joblib or Pickle
+    joblib.dump(best_Loan_model,"DecisionTreeModel.pkl")
